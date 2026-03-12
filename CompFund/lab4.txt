@@ -1,0 +1,300 @@
+% Лабораторная работа № 4. Метапрограммирование. Отложенные вычисления
+% 12.11.2025
+% Артём Воронков, ИУ9-11Б
+
+# Цель работы
+На примере языка Scheme ознакомиться со средствами метапрограммирования
+ («код как данные», макросы) и подходами к оптимизации вычислений
+ (мемоизация результатов вычислений, отложенные вычисления).
+
+В работе также предлагается разработать дополнительное средство
+ отладки программ — каркас для отладки с помощью утверждений.
+ На этом примере предлагается ознакомится с типичным применением
+ программирования с использованием продолжений.
+
+# Индивидуальный вариант
+Реализуйте каркас (фреймворк) для отладки с помощью утверждений.
+ Пусть Ваш каркас перед использованием инициализируется вызовом (use-assertions),
+ а сами утверждения записываются в коде ниже в виде (assert условие).
+ Если условие не выполнено, происходит завершение работы программы без
+ возникновения ошибки выполнения и вывод в консоль диагностического сообщения
+ вида FAILED: условие
+
+Напишите процедуру (proc-desugar source dest), которая принимает
+ исходный файл source на языке Scheme и формирует новый файл dest,
+ в котором определения процедур преобразованы в определения переменных,
+ инициализированных безымянными процедурами
+
+Напишите процедуру (text-stat source), которая принимает текстовый файл
+ и подсчитывает в нём количество
+слов (состоят из букв, дефисов и апострофов),
+чисел (состят из цифр) и
+знаков пунктуации «,», «.», «!», «(», «)», «?» (только общее количество)
+
+Реализуйте функцию вычисления n-го “числа трибоначчи” (последовательности чисел,
+ которой первые три числа равны соответственно 0, 0 и 1, а каждое
+ последующее число — сумме предыдущих трех чисел)
+
+Гигиенический макрос (lazy-cons a b), конструирующий ленивую точечную пару вида
+ (значение-a . обещание-вычислить-значение-b). Почему макрос в данном случае
+ предпочтительнее процедуры?
+Процедуру (lazy-car p), возвращающую значение 1-го элемента «ленивой» точечной пары p.
+Процедуру (lazy-cdr p), возвращающую значение 2-го элемента «ленивой» точечной пары p.
+На их основе определите:
+
+Процедуру (lazy-head xs k), возвращающую значение k первых элементов «ленивого»
+ списка xs в виде списка.
+Процедуру (lazy-ref xs k), возвращающую значение k-го элементa «ленивого» списка xs.
+Процедуру (lazy-map proc xs), принимающую «ленивый» список xs и формирующую новый
+ «ленивый» список, полученный применением (proc x) к каждому x из xs.
+Процедуру (lazy-zip xs ys), принимающую два «ленивых» списка xs и ys и формирующую
+ новый «ленивый» список, составленный из списков (list x y) для каждых x и y из xs
+ и ys соответственно. Поведение (lazy-zip xs ys) эквивалентно (map list xs ys) с
+ тем отличием, что списки «ленивые»
+
+«Ленивый» список чисел Фибоначчи
+
+(unless cond? expr1 expr2 … exprn), который выполняет последовательность
+ выражений expr1 expr2 … exprn,
+ если условие cond? ложно.
+Реализуйте макрос while, который позволит организовывать циклы с предусловием:
+
+(while cond? expr1 expr2 … exprn)
+
+Реализуйте макрос для последовательного вывода значений в стандартный поток
+ вывода вида
+# Реализация
+
+```scheme
+(define assertion-exit #f)
+
+(define-syntax assert
+  (syntax-rules ()
+    ((assert cond)
+     (if (not cond)
+         (begin
+           (display "FAILED: ")
+           (write 'cond)
+           (newline)
+           (assertion-exit))))))
+
+
+(define (use-assertions)
+  (call-with-current-continuation
+   (lambda (z)
+     (set! assertion-exit z)
+     'assertions-enabled)))
+
+(define (proc-desugar source dest)
+  (define (transform-definition def)
+    (cond
+      ((and (pair? def) (equal? (car def) 'define) (pair? (cadr def)))
+       (let ((func-name (caadr def)))
+         (list 'define func-name (list 'lambda (cdadr def) (caddr def)))))
+      (else def)))
+
+
+    (with-input-from-file source
+      (lambda ()
+        (with-output-to-file dest
+          (lambda ()
+            (let loop ((expr (read)))
+              (cond
+                ((eof-object? expr) #t)
+                (else
+                 (write (transform-definition expr))
+                 (newline)
+                 (loop (read))))))))))
+
+(define (text-stat source)
+  (with-input-from-file source
+    (lambda ()
+      (let loop ((ch (read-char)) (isnumber? #f) (dig 0) (punct 0) (isword? #f) (w 0))
+        (cond
+          ((eof-object? ch) 
+           (list w dig punct))
+
+          ((char-word? ch)
+           (if isword?
+               (loop (read-char) #f dig punct #t w)
+               (loop (read-char) #f dig punct #t (+ w 1))))
+          
+          ((char-numeric? ch)
+           (if isnumber?
+               (loop (read-char) #t dig punct #f w)
+               (loop (read-char) #t (+ dig 1) punct #f w)))
+          
+          ((char-punctuation? ch)
+           (loop (read-char) #f dig (+ punct 1) #f w))
+          
+          (else
+           (loop (read-char) #f dig punct #f w)))))))
+
+(define (char-word? ch)
+  (or (char-alphabetic? ch)
+      (char=? ch #\-)
+      (char=? ch #\')))
+
+(define (char-punctuation? ch)
+  (or (char=? ch #\,)
+      (char=? ch #\.)
+      (char=? ch #\!)
+      (char=? ch #\()
+      (char=? ch #\))
+      (char=? ch #\?)))
+
+(define trib-memo
+  (let ((known-results '((0 . 0) (1 . 0) (2 . 1))))
+    (lambda (n)
+      (let* ((res (assoc n known-results)))
+        (if res
+            (cdr res)
+            (let ((new-res (+ (trib-memo (- n 1))
+                              (trib-memo (- n 2))
+                              (trib-memo (- n 3)))))
+              (set! known-results
+                    (cons (cons n new-res) known-results))
+              new-res))))))
+
+(define-syntax lazy-cons
+  (syntax-rules ()
+    ((lazy-cons a b)
+     (cons a (delay b)))))
+
+(define (lazy-car p)
+  (car p))
+
+(define (lazy-cdr p)
+  (force (cdr p)))
+
+(define (lazy-head xs k)
+  (if (= k 0)
+      '()
+      (cons (lazy-car xs) (lazy-head (lazy-cdr xs) (- k 1)))))
+
+(define (lazy-ref xs k)
+  (if (= k 0)
+      (lazy-car xs)
+      (lazy-ref (lazy-cdr xs) (- k 1))))
+
+(define (lazy-map proc xs)
+  (lazy-cons (proc (lazy-car xs)) (lazy-map proc (lazy-cdr xs))))
+
+(define (lazy-zip xs ys)
+  (lazy-cons (list (lazy-car xs) (lazy-car ys))
+             (lazy-zip (lazy-cdr xs) (lazy-cdr ys))))
+
+(define fibonacci
+  (letrec ((fib (lazy-cons 1
+                           (lazy-cons 1
+                                      (lazy-map (lambda (x) (+ (car x) (cadr x)))
+                                                (lazy-zip fib (lazy-cdr fib)))))))
+    fib))
+
+
+(define-syntax unless
+  (syntax-rules()
+    ((unless cond? expr1 expr2 ... exprn)
+     (if (not cond?)
+         (begin expr1 expr2 ... exprn)))))
+
+(define-syntax while
+  (syntax-rules()
+    ((while cond? expr1 expr2 ... exprn)
+     (letrec ((iter (lambda ()
+                      (if cond? 
+                          (begin expr1 expr2 ... exprn
+                                 (iter))))))
+       (iter)))))
+
+(define-syntax cout
+  (syntax-rules (<< endl)
+    ((cout) (begin))
+    
+    ((cout << endl . rest)
+     (begin (newline) (cout . rest)))
+    
+    ((cout << expr)
+     (display expr))
+    
+    ((cout << expr . rest)
+     (begin (display expr) (cout . rest)))))
+
+```
+
+# Тестирование
+
+Тестовый файл `input.txt`:
+```
+(define (f x y z)
+ (display x))
+
+(define (f x y)
+ (write y))
+```
+
+Тестовый файл `input.scm`:
+```
+привет мой, дорогой, друг-диван 12 а ?
+```
+
+Сгенерированный файл в задаче 2:
+```
+(define f (lambda (x y z) (display x)))
+(define f (lambda (x y) (write y)))
+```
+
+Вывод программы на экран:
+```
+Welcome to DrRacket, version 8.18 [cs].
+Language: R5RS; memory limit: 128 MB.
+> (use-assertions)
+assertions-enabled
+> (define (1/x x)
+  (assert (not (zero? x))) ; Утверждение: x ДОЛЖЕН БЫТЬ ≠ 0
+  (/ 1 x))
+> (map 1/x '(1 2 3 4 5))
+(1 1/2 1/3 1/4 1/5)
+> (map 1/x '(-2 -1 0 1 2))
+FAILED: (not (zero? x))
+
+> (text-stat "C:/Users/happy/Downloads/one.txt")
+(5 1 3)
+
+> (trib-memo 100)
+53324762928098149064722658
+
+> (define ones (lazy-cons 1 ones))
+> (lazy-head ones 5)
+(1 1 1 1 1)
+> (display (lazy-head fibonacci 10))
+(1 1 2 3 5 8 13 21 34 55)
+
+> (define x 1)
+> (unless (= x 0) (display "x != 0") (newline))
+x != 0
+> (let ((p 0)
+      (q 0))
+  (while (< p 3)
+         (set! q 0)
+         (while (< q 3)
+                (display (list p q))
+                (newline)
+                (set! q (+ q 1)))
+         (set! p (+ p 1))))
+(0 0)
+(0 1)
+(0 2)
+(1 0)
+(1 1)
+(1 2)
+(2 0)
+(2 1)
+(2 2)
+> (cout << "a = " << 1 << endl << "b = " << 2 << endl)
+a = 1
+b = 2
+```
+
+# Вывод
+Я научился использовать макросы для создания новых синтаксических конструкций, работать с отложенными вычислениями через ленивые списки, реализовывать каркас для отладки, обрабатывать, считывать и изменять файлы, применять мемоизацию для оптимизации вычислений

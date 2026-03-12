@@ -1,0 +1,298 @@
+% Лабораторная работа № 3. Типы данных. Модульное тестирование
+% 15.10.2025
+% Артём Воронков, ИУ9-11Б
+
+# Цель работы
+На практике ознакомиться с системой типов языка Scheme.
+На практике ознакомиться с юнит-тестированием.
+Разработать свои средства отладки программ на языке Scheme.
+На практике ознакомиться со средствами метапрограммирования языка Scheme.
+
+# Индивидуальный вариант
+Реализуйте макрос trace для трассировки
+Макрос test — конструктор теста вида (выражение ожидаемый-результат).
+Процедуру run-test, выполняющую отдельный тест. 
+Процедуру run-tests, выполняющую серию тестов, переданную ей в виде списка.
+Реализуйте процедуру доступа к произвольному элементу последовательности 
+(правильного списка, вектора или строки) по индексу.
+Реализуйте процедуру «вставки» произвольного элемента в последовательность, 
+в позицию с заданным индексом (процедура возвращает новую последовательность).
+Реализуйте процедуру if->cond, принимающую выражение на языке Scheme, содержащее 
+цепочку условных конструкций (в ложной ветке if’а находится ещё один if и т.д.) и 
+преобразующую её в эквивалентный cond. 
+
+# Реализация
+
+```scheme
+(define-syntax trace
+  (syntax-rules ()
+    ((trace value)
+     (begin
+       (let ((val value))
+         (write 'value)
+         (display " => ")
+         (write val)
+         (newline)
+         val)))))
+
+
+(define (zip . xss)
+  (if (or (null? xss)
+          (null? (trace (car xss))))
+      '()
+      (cons (map car xss)
+            (apply zip (map cdr(trace xss))))))
+
+
+(define-syntax test
+  (syntax-rules ()
+    ((test expr result)
+     (list (lambda () expr)
+           'result 'expr))))
+
+(define (signum x)
+  (cond
+    ((< x 0) -1)
+    ((= x 0) 1)
+    (else 1)))
+
+(define counter
+  (let ((n 0))
+    (lambda ()
+      (set! n (+ n 1))
+      n)))
+
+(define the-tests
+  (list (test (signum -2) -1)
+        (test (signum  0)  0)
+        (test (signum  2)  1)
+        (test (counter) 1)
+        (test (counter) 77) ; ошибка в тесте, должно быть 2
+        (test (counter) 3)
+        (test (* 7 7) "49"))) ; тест, демонстрирующий разницу
+; между write и display
+
+
+(define (run-test xs)
+  (write (caddr xs))
+  (let ((eqv ((car xs))))
+    (if (equal? (cadr xs) eqv)
+        (begin  
+          (display " ok")
+          (newline)
+          #t)
+     
+        (begin
+          (display " FAIL")
+          (newline)
+          (display "Expected: ")
+          (write (cadr xs))
+          (newline)
+          (display "Returned: ")
+          (write eqv)
+          (newline)
+          #f
+          ))))
+    
+
+(define (run-tests xss)
+  (define (loop xs yn)
+    (if (not (null? xs))
+        (let ((rs (run-test (car xs))))
+          (loop (cdr xs) (and yn rs)))
+        yn))
+  (let ((res (loop xss #t)))
+    res))
+
+
+(define (ref xss idx . new)
+
+  (define (loop xs id)
+    (and (not (or (and (null? new) (< (length xs) (+ id 1)))
+                  (< (length xs) id)))
+         (if (= id 0)
+             (if (null? new)
+                 (car xs)
+                 (append (reverse xs) new))
+             (let ((r (loop (cdr xs) (- id 1))))
+               (if (pair? r)
+                   (append r (cons (car xs) '()))
+                   (append (list r)))))))
+        
+
+  (cond
+    ((string? xss) (and (or (null? new)
+                            (char? (car new)))
+                        (let ((res (loop (string->list xss) idx)))
+                          (and res
+                               (if (null? new)
+                                   (if (pair? res)
+                                       (car res)
+                                       res)
+                                   (list->string (reverse res)))))))
+    ((vector? xss) (let ((res (loop (vector->list xss) idx)))
+                     (and res
+                          (if (null? new)
+                              (if (pair? res)
+                                  (car res)
+                                  res)
+                              (list->vector (reverse res))))))
+    ((list? xss) (let ((res (loop xss idx)))
+                   (and res
+                        (if (null? new)
+                            (if (pair? res)
+                                (car res)
+                                res)
+                            (reverse res)))))))
+
+
+
+(define (if->cond expr)
+  (define (expand e)
+    (if (and (list? e) (eq? (car e) 'if))
+        (let ((test (cadr e))
+              (then (caddr e))
+              (else-part (if (>= (length e) 4) (cadddr e) #f)))
+          (if (and (list? else-part) (eq? (car else-part) 'if))
+              (cons (list test then) (expand else-part))
+              (if (eq? else-part #f)
+                  (list (list test then))
+                  (list (list test then) (list 'else else-part)))))
+        '()))
+  (cons 'cond (expand expr)))
+
+(define the-tests1
+  (list
+   (test (if->cond '(if (> x 0)
+                        1
+                        (if (< x 0)
+                            -1
+                            0)))
+         (cond ((> x 0) 1)
+               ((< x 0) -1)
+               (else 0)))
+
+   (test (if->cond '(if (equal? (car expr) 'lambda)
+                        (compile-lambda expr)
+                        (if (equal? (car expr) 'define)
+                            (compile-define expr)
+                            (if (equal? (car expr) 'if)
+                                (compile-if expr)))))
+         (cond ((equal? (car expr) 'lambda) (compile-lambda expr))
+               ((equal? (car expr) 'define) (compile-define expr))
+               ((equal? (car expr) 'if) (compile-if expr))))
+
+   (test (if->cond '(if a
+                        aa
+                        (if b
+                            bb
+                            (if c
+                                cc
+                                dd))))
+         (cond (a aa) (b bb) (c cc) (else dd)))
+
+   (test (if->cond '(if a
+                        aa
+                        (if b
+                            bb
+                            (if c
+                                cc))))
+         (cond (a aa) (b bb) (c cc)))
+
+   (test (if->cond '(if (> x 0)
+                        (display '+)
+                        (if (= x 0)
+                            (display 0)
+                            (display '-))))
+         (cond ((> x 0) (display '+))
+               ((= x 0) (display 0))
+               (else (display '-))))
+
+   (test (if->cond '(if (< d 0)
+                        (list)
+                        (if (= d 0)
+                            (list x)
+                            (list x1 x2))))
+         (cond ((< d 0) (list))
+               ((= d 0) (list x))
+               (else (list x1 x2))))))
+```
+
+# Тестирование
+
+```
+Welcome to DrRacket, version 8.18 [cs].
+Language: R5RS; memory limit: 128 MB.
+> (zip '(1 2 3) '(one two three))
+(1 2 3)
+((1 2 3) (one two three))
+(2 3)
+((2 3) (two three))
+(3)
+((3) (three))
+()
+((1 one) (2 two) (3 three))
+> (+ (trace (counter))
+     (trace (counter)))
+1
+2
+3
+> (run-tests the-tests)
+(signum -2) ok
+(signum 0) FAIL
+Expected: 0
+Returned: 1
+(signum 2) ok
+(counter) FAIL
+Expected: 1
+Returned: 3
+(counter) FAIL
+Expected: 77
+Returned: 4
+(counter) FAIL
+Expected: 3
+Returned: 5
+(* 7 7) FAIL
+Expected: "49"
+Returned: 49
+#f
+> (ref '(1 2 3) 1)
+2
+> (ref #(1 2 3) 1)
+2
+> (ref "123" 1)
+#\2
+> (ref "123" 3)
+#f
+> (ref '(1 2 3) 1 0)
+(1 0 2 3)
+> (ref #(1 2 3) 1 0)
+#(1 0 2 3)
+> (ref #(1 2 3) 1 #\0)
+#(1 #\0 2 3)
+> (ref "123" 1 #\0)
+"1023"
+> (ref "123" 1 0)
+#f
+> (ref "123" 3 #\4)
+"1234"
+> (ref "123" 5 #\4)
+#f
+> (run-tests the-tests1)
+(if->cond '(if (> x 0) 1 (if (< x 0) -1 0))) ok
+(if->cond '(if (equal? (car expr) 'lambda) (compile-lambda expr)
+(if (equal? (car expr) 'define) (compile-define expr) 
+(if (equal? (car expr) 'if) (compile-if expr))))) ok
+(if->cond '(if a aa (if b bb (if c cc dd)))) ok
+(if->cond '(if a aa (if b bb (if c cc)))) ok
+(if->cond '(if (> x 0) (display '+) (if (= x 0) (display 0) (display '-)))) ok
+(if->cond '(if (< d 0) (list) (if (= d 0) (list x) (list x1 x2)))) ok
+#t
+```
+
+# Вывод
+Я научился писать свои макросы для отладки собственных программ.
+Также научился разрабатывать собственное юнит-тестирование и с
+помощью него разрабатывать процедуры. Я наконец понял смысл и
+способы использования let! Оказалось очень полезно. Еще лучше узнал 
+принцип работы строк, векторов и списков, а также их объединение

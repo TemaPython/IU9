@@ -1,0 +1,176 @@
+% Лабораторная работа № 7. Оболочка и скрипты
+% 24 декабря 2025 г.
+% Артём Воронков, ИУ9-11Б
+
+# Цель работы
+Получение навыков написания сценариев на «скриптовых» языках.
+
+# Реализация
+
+Файл `sleep`:
+
+```bash
+#!/bin/bash
+sleep 10
+echo "подождали"
+```
+Файл `reapeat`:
+```bash
+#!/bin/bash
+t="$2"
+i=0
+"$1" > print$i.txt 2> errors$i.txt &
+i=$((i+1))
+pid=$!
+while true; do
+    if kill -0 "$pid"; then
+        sleep "$t"m
+    else
+        "$1" > print$i.txt 2> errors$i.txt &
+        i=$((i+1))
+        pid=$!
+        sleep "$t"m
+    fi
+done
+```
+Файл `str`:
+```bash
+#!/bin/bash
+count=0
+rec() {
+    if [ -d "$1" ]; then
+        for name in "$1"/*; do
+            rec "$name"
+        done
+    else
+        case "$1" in
+            *.c|*.h)
+                n=$(grep -cve '^[[:space:]]*$' "$1")
+                count=$((count + n))
+                ;;
+        esac
+    fi
+}
+rec "$1"
+echo "$count"
+```
+Файл `strok.py`:
+```bash
+#!/usr/bin/env python3
+import random
+import string
+def random_string(ln, cnt):
+    alph = string.ascii_letters + string.digits + string.punctuation
+    for i in range(cnt):
+        st = "".join([random.choice(alph) for i in range(ln)])
+        print(st)
+```Файл `strok_main.py`:
+```bash
+#!/usr/bin/env python3
+from strok import random_string
+import sys
+def main():
+    length = int(sys.argv[1])
+    count = int(sys.argv[2])
+    random_string(length, count)
+
+if __name__ == "__main__":
+    main()
+```
+Файл `mynl.py`:
+```bash
+#!/usr/bin/env python3
+import sys
+def mynl(stream):
+    line_no = 1
+    for line in stream:
+        if line.strip() == "":
+            sys.stdout.write(line)
+        else:
+            sys.stdout.write(f"{line_no}\t{line}")
+            line_no += 1
+
+def main():
+    if len(sys.argv) == 1:
+        mynl(sys.stdin)
+    else:
+        for name in sys.argv[1:]:
+            with open(name, "r") as f:
+                mynl(f)
+                
+if __name__ == "__main__":
+    main()
+```
+
+# Тестирование
+
+```
+happy@laptopTema CLANGARM64 ~/lab7
+$ chmod +x sleep reapeat str
+happy@laptopTema CLANGARM64 ~/lab7 
+$ ./reapeat ./sleep 1
+программа sleep запускается каждые 1 минуту,
+вывод сохраняется в файлы print0.txt, print1.txt, ..., ошибки — в errors0.txt, errors1.txt, …
+happy@laptopTema CLANGARM64 ~/lab7
+$ ./str C:/Users/happy/source/repos/ConsoleApplication1/ConsoleApplication1
+374
+happy@laptopTema CLANGARM64 ~/lab7
+$ ./strok_main.py 8 5
+=A)lP"Yn
+:uY]cfbb
+ro5}A26O
+oW\QTe2E
+x)/'Y8Z#
+happy@laptopTema CLANGARM64 ~/lab7
+$ nl --help | ./mynl.py
+1       Usage: nl [OPTION]... [FILE]...
+2       Write each FILE to standard output, with line numbers added.
+
+3       With no FILE, or when FILE is -, read standard input.
+
+4       Mandatory arguments to long options are mandatory for short options too.
+5         -b, --body-numbering=STYLE      use STYLE for numbering body lines
+6         -d, --section-delimiter=CC      use CC for logical page delimiters
+7         -f, --footer-numbering=STYLE    use STYLE for numbering footer lines
+8         -h, --header-numbering=STYLE    use STYLE for numbering header lines
+9         -i, --line-increment=NUMBER     line number increment at each line
+10        -l, --join-blank-lines=NUMBER   group of NUMBER empty lines counted as one
+11        -n, --number-format=FORMAT      insert line numbers according to FORMAT
+12        -p, --no-renumber               do not reset line numbers for each section
+13        -s, --number-separator=STRING   add STRING after (possible) line number
+14        -v, --starting-line-number=NUMBER  first line number for each section
+15        -w, --number-width=NUMBER       use NUMBER columns for line numbers
+16            --help     display this help and exit
+17            --version  output version information and exit
+
+18      Default options are: -bt -d'\:' -fn -hn -i1 -l1 -n'rn' -s<TAB> -v1 -w6
+
+19      CC are two delimiter characters used to construct logical page delimiters;
+20      a missing second character implies ':'.
+
+21      STYLE is one of:
+
+22        a      number all lines
+23        t      number only nonempty lines
+24        n      number no lines
+25        pBRE   number only lines that contain a match for the basic regular
+26               expression, BRE
+
+27      FORMAT is one of:
+
+28        ln     left justified, no leading zeros
+29        rn     right justified, no leading zeros
+30        rz     right justified, leading zeros
+
+
+31      GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
+32      Report any translation bugs to <https://translationproject.org/team/>
+33      Full documentation <https://www.gnu.org/software/coreutils/nl>
+34      or available locally via: info '(coreutils) nl invocation'
+```
+
+# Вывод
+В ходе выполнения лабораторной работы были получены навыки написания скриптов на Bash и Python
+для автоматизации запуска программ, рекурсивной обработки каталогов и работы с текстовыми потоками.
+Были реализованы и протестированы скрипты для периодического запуска программ, подсчёта 
+непустых строк в проектах на C, генерации случайных строк и нумерации строк в файлах.
