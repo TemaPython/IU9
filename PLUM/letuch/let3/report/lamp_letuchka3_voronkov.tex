@@ -1,0 +1,387 @@
+\documentclass[a4paper, 14pt]{extarticle}
+
+% Поля
+%--------------------------------------
+\usepackage{geometry}
+\geometry{a4paper,tmargin=2cm,bmargin=2cm,lmargin=3cm,rmargin=1cm}
+%--------------------------------------
+
+
+%Russian-specific packages
+%--------------------------------------
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc} 
+\usepackage[english, main=russian]{babel}
+%--------------------------------------
+
+\usepackage{textcomp}
+
+% Красная строка
+%--------------------------------------
+\usepackage{indentfirst}               
+%--------------------------------------             
+
+
+%Graphics
+%--------------------------------------
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{wrapfig}
+%--------------------------------------
+
+% Полуторный интервал
+%--------------------------------------
+\linespread{1.3}                    
+%--------------------------------------
+
+%Выравнивание и переносы
+%--------------------------------------
+% Избавляемся от переполнений
+\sloppy
+% Запрещаем разрыв страницы после первой строки абзаца
+\clubpenalty=10000
+% Запрещаем разрыв страницы после последней строки абзаца
+\widowpenalty=10000
+%--------------------------------------
+
+%Списки
+\usepackage{enumitem}
+
+%Подписи
+\usepackage{caption} 
+
+%Гиперссылки
+\usepackage{hyperref}
+
+\hypersetup {
+	unicode=true
+}
+
+%Рисунки
+%--------------------------------------
+\DeclareCaptionLabelSeparator*{emdash}{~--- }
+\captionsetup[figure]{labelsep=emdash,font=onehalfspacing,position=bottom}
+%--------------------------------------
+
+\usepackage{tempora}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{listings}
+\lstset{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue},
+  commentstyle=\itshape\color{purple},
+  identifierstyle=\color{black},
+  stringstyle=\color{red},
+}
+
+%--------------------------------------
+%			НАЧАЛО ДОКУМЕНТА
+%--------------------------------------
+
+\begin{document}
+
+%--------------------------------------
+%			ТИТУЛЬНЫЙ ЛИСТ
+%--------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\newpage
+
+
+%Шапка титульного листа
+%--------------------------------------
+\vspace*{-60pt}
+\hspace{-65pt}
+\begin{minipage}{0.3\textwidth}
+\hspace*{-20pt}\centering
+\includegraphics[width=\textwidth]{emblem}
+\end{minipage}
+\begin{minipage}{0.67\textwidth}\small \textbf{
+\vspace*{-0.7ex}
+\hspace*{-6pt}\centerline{Министерство науки и высшего образования Российской Федерации}
+\vspace*{-0.7ex}
+\centerline{Федеральное государственное бюджетное образовательное учреждение }
+\vspace*{-0.7ex}
+\centerline{высшего образования}
+\vspace*{-0.7ex}
+\centerline{<<Московский государственный технический университет}
+\vspace*{-0.7ex}
+\centerline{имени Н.Э. Баумана}
+\vspace*{-0.7ex}
+\centerline{(национальный исследовательский университет)>>}
+\vspace*{-0.7ex}
+\centerline{(МГТУ им. Н.Э. Баумана)}}
+\end{minipage}
+%--------------------------------------
+
+%Полосы
+%--------------------------------------
+\vspace{-25pt}
+\hspace{-35pt}\rule{\textwidth}{2.3pt}
+
+\vspace*{-20.3pt}
+\hspace{-35pt}\rule{\textwidth}{0.4pt}
+%--------------------------------------
+
+\vspace{1.5ex}
+\hspace{-35pt} \noindent \small ФАКУЛЬТЕТ\hspace{80pt} <<Информатика и системы управления>>
+
+\vspace*{-16pt}
+\hspace{47pt}\rule{0.83\textwidth}{0.4pt}
+
+\vspace{0.5ex}
+\hspace{-35pt} \noindent \small КАФЕДРА\hspace{50pt} <<Теоретическая информатика и компьютерные технологии>>
+
+\vspace*{-16pt}
+\hspace{30pt}\rule{0.866\textwidth}{0.4pt}
+  
+\vspace{11em}
+
+\begin{center}
+\Large {\bf Летучка № 3} \\ 
+\large {\bf по курсу <<Языки и методы программирования>>} \\ 
+\large <<Подсчет расстояния между точками>>
+\end{center}\normalsize
+
+\vspace{8em}
+
+
+\begin{flushright}
+  {Студент группы ИУ9-21Б Воронков А. С.\hspace*{15pt} \\
+  \vspace{2ex}
+  Преподаватель Посевин Д. П.\hspace*{15pt}}
+\end{flushright}
+
+\bigskip
+
+\vfill
+ 
+
+\begin{center}
+\textsl{Москва 2026}
+\end{center}
+\end{titlepage}
+%--------------------------------------
+%		КОНЕЦ ТИТУЛЬНОГО ЛИСТА
+%--------------------------------------
+
+\renewcommand{\ttdefault}{pcr}
+
+\setlength{\tabcolsep}{3pt}
+\newpage
+\setcounter{page}{2}
+
+\section{Цель}\label{Sect::task}
+\par 
+\begin{enumerate}
+    \item Реализовать класс Point, класс Ruler, у каждого класса должна быть способность измерять расстояние методом dist(Point p1, Point p2) и время своей работы 
+    \item Обернуть эти классы в веб-сервер и запустить через утилиту screen
+\end{enumerate}
+\pagebreak
+\section{Практическая реализация}
+Код файла Point.java
+\begin{lstlisting}
+import java.util.Date;
+
+import static java.lang.Math.*;
+import java.util.Date;
+
+public class Point {
+
+    double x, y;
+    static Date timeStart;
+    Date timeStartObj;
+
+    static {
+        timeStart = new Date();
+    }
+
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+        timeStartObj = new Date();
+    }
+
+    public static double dist(Point a, Point b) {
+        double dx = a.x - b.x, dy = a.y - b.y;
+        return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+    }
+
+    public String gtTime() {
+        return String.valueOf(timeStartObj.getTime() - timeStart.getTime());
+    }
+}
+\end{lstlisting}
+\par
+Код файла Ruler.java
+\begin{lstlisting}
+import java.util.Date;
+
+import static java.lang.Math.*;
+
+public class Ruler {
+    static Date timeStart;
+    Date timeStartObj;
+
+    static {
+        timeStart = new Date();
+    }
+    public Ruler() {
+        timeStartObj = new Date();
+    }
+    public double dist(Point a, Point b) {
+        double dx = a.x - b.x, dy = a.y - b.y;
+        return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+    }
+
+    public String gtTime() {
+        return String.valueOf(timeStartObj.getTime() - timeStart.getTime());
+    }
+}
+\end{lstlisting}
+\par
+Код файла Test.java
+\begin{lstlisting}
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+class QueryParser {
+
+    static Map<String, String> parse(String query) {
+        Map<String, String> params = new HashMap<>();
+        if (query == null || query.isEmpty())
+            return params;
+
+        for (String pair : query.split("&")) {
+            String[] parts = pair.split("=", 2);
+            if (parts.length != 2)
+                continue;
+
+            String key = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+            String value = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+            params.put(key, value);
+        }
+        return params;
+    }
+}
+
+class PointMapper {
+
+    static Point[] fromParams(Map<String, String> params) {
+        double x1 = Double.parseDouble(params.getOrDefault("x1", "0"));
+        double y1 = Double.parseDouble(params.getOrDefault("y1", "0"));
+        double x2 = Double.parseDouble(params.getOrDefault("x2", "0"));
+        double y2 = Double.parseDouble(params.getOrDefault("y2", "0"));
+        return  new Point[] {new Point(x1, y1), new Point(x2, y2)};
+    }
+}
+
+class PointJsonSerializer {
+
+    static String toJson(Point p1, Point p2, String way, Ruler lin) {
+        if (way.equals("ruler")) {
+            return """
+                    {
+                      "distance": %.2f
+                      "way": %s
+                      "work_time_ms": %s
+                    }
+                    """.formatted(
+                    lin.dist(p1, p2),
+                    "By ruler",
+                    lin.gtTime());
+        } else {
+            return """
+                    {
+                      "distance": %.2f
+                      "way": %s
+                      "work_time_ms": %s
+                    }
+                    """.formatted(
+                    Point.dist(p1, p2),
+                    "By points",
+                    p1.gtTime());
+        }
+    }
+
+    private static String escape(String s) {
+        return s.replace("\"", "\\\"");
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(5678), 0);
+        server.createContext("/test", new MyHandler());
+        server.setExecutor(null); // creates a default executor
+        server.start();
+    }
+
+    static class MyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            String query = exchange.getRequestURI().getQuery();
+            Map<String, String> params = QueryParser.parse(query);
+            String way = params.getOrDefault("way", "points");
+            Point[] points;
+            try {
+                points = PointMapper.fromParams(params);
+            } catch (NumberFormatException e) {
+                exchange.sendResponseHeaders(400, -1);
+                return;
+            }
+            Ruler lin = new Ruler();
+
+            String json = PointJsonSerializer.toJson(points[0], points[1], way, lin);
+
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, json.getBytes().length);
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(json.getBytes());
+            }
+        }
+    }
+
+}
+\end{lstlisting}
+
+\section{Результаты}
+В результате работы программы в окне screen мы получаем расстояние между двумя точками в формкате JSON, время работы программы и способ подсчета расстояния: линейкой при заданном параметре way=ruler, в остальных случаях расстояние считается через собственный метод класса Point.
+
+\begin{center}
+    \nopagebreak
+    \includegraphics[width=0.85\textwidth]{v1}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Результат запроса с параметрами: \\ \url{http://185.102.139.168:5678/test?x1=1&y1=2&x2=3&y2=4&way=ruler}}
+
+    \includegraphics[width=0.85\textwidth]{v2}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Результат запроса без параметров: \\ \url{http://185.102.139.168:5678/test}}
+\end{center}
+
+\section{Вывод}
+В данной лабораторной работе были созданы классы Point и Ruler. Была переработана "обертка" для вывода на веб-сервере расстояния между точками, способа измерения и времени работы программы.
+\end{document}
