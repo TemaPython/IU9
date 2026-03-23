@@ -188,10 +188,13 @@
 \par 
 Изучение обобщённых итераторов и экземплярных вложенных классов языка Java.  
 \section{Задание}
-Требуется разработать на языке Java класс с реализованным интерфейсом Comparable<T>
-Класс квадратных целочисленных матриц размера n с порядком на основе 
-количества элементов, нарушающих симметричность матрицы относительно 
-главной диагонали. 
+Требуется разработать на языке Java:
+\begin{itemize}
+    \item Параметризованная типовым параметром T последовательность контейнеров, классы которых реализуют интерфейс Iterable (итератор – «конкатенация» итераторов контейнеров). 
+    \item Последовательность целых чисел с итератором по цифрам десятичного представления чисел. 
+
+\end{itemize}
+
 \pagebreak
 \section{Практическая реализация}
 Код файла Container.java
@@ -244,7 +247,7 @@ public class Container<T extends Iterable<E>, E> implements Iterable<E> {
 
 }
 \end{lstlisting}
-\per
+\par
 Код файла Test.java
 \begin{lstlisting}
 import java.util.Arrays;
@@ -265,15 +268,84 @@ public class Test {
     }
 }
 \end{lstlisting}
+\par
+Код файла NumsDigits.java
+\begin{lstlisting}
+import java.util.Arrays;
+import java.util.Iterator;
+
+public class NumsDigits implements Iterable<Integer> {
+    private int[] numList;
+    private int size;
+
+    public NumsDigits(int[] numList) {
+        this.numList = Arrays.copyOf(numList, numList.length * 2);
+        this.size = numList.length;}
+
+
+    public void add(int n) {
+        if (size == numList.length) {
+            numList = Arrays.copyOf(numList, numList.length * 2);
+        }
+        numList[size++] = n;
+    }
+    public void remove(int index) {
+        System.arraycopy(numList, index + 1, numList, index, size - index - 1);
+        numList[--size] = 0;
+    }
+    public Iterator<Integer> iterator() {return new DigitsIterator();}
+
+    public class DigitsIterator implements Iterator<Integer> {
+        private int numPos = 0;
+        private int digitPos = 0;
+        private String current = String.valueOf(Math.abs(numList[0]));
+        public boolean hasNext() {
+            return numPos < size;
+        }
+        public Integer next() {
+            int digit = current.charAt(digitPos) - '0';
+            digitPos++;
+            if (digitPos == current.length()) {
+                numPos++;
+                digitPos=0;
+                if (numPos < size) {
+                    current = String.valueOf(Math.abs(numList[numPos]));
+                }
+            }
+            return digit;
+        }
+    }
+}
+\end{lstlisting}
+\par
+Код файла Test1.java
+\begin{lstlisting}
+import java.util.Arrays;
+import java.util.List;
+
+public class Test1 {
+    public static void main(String[] args) {
+        int[] arr = {1134, -212, 4233};
+        NumsDigits p = new NumsDigits(arr);
+
+        for (int s : p) {
+            System.out.println(s);
+        }
+    }
+}
+\end{lstlisting}
 
 \section{Результаты}
-В результате лабораторной работы был создан параметризированный класс с операцией конкатенации циклов
+В результате лабораторной работы был создан параметризированный класс с операцией конкатенации циклов, и класс для итерации списка чисел по его цифрам
 
 \begin{center}
     \nopagebreak
     \includegraphics[width=0.85\textwidth]{lab4_1}
     \captionsetup{justification=centering}
     \captionof{figure}{Результат работы Test.java}
+    \includegraphics[width=0.85\textwidth]{lab4_2}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Результат работы Test1.java}
 \end{center}
 
 \section{Вывод}
