@@ -1,0 +1,458 @@
+\UseRawInputEncoding
+\documentclass[a4paper, 14pt]{extarticle}
+
+% Поля
+%--------------------------------------
+\usepackage{geometry}
+\geometry{a4paper,tmargin=2cm,bmargin=2cm,lmargin=3cm,rmargin=1cm}
+%--------------------------------------
+
+
+%Russian-specific packages
+%--------------------------------------
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc} 
+\usepackage[english, main=russian]{babel}
+\usepackage{cmap}
+%--------------------------------------
+
+\usepackage{textcomp}
+
+% Красная строка
+%--------------------------------------
+\usepackage{indentfirst}               
+%--------------------------------------             
+
+
+%Graphics
+%--------------------------------------
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{wrapfig}
+%--------------------------------------
+
+% Полуторный интервал
+%--------------------------------------
+\linespread{1.3}                    
+%--------------------------------------
+
+%Выравнивание и переносы
+%--------------------------------------
+% Избавляемся от переполнений
+\sloppy
+% Запрещаем разрыв страницы после первой строки абзаца
+\clubpenalty=10000
+% Запрещаем разрыв страницы после последней строки абзаца
+\widowpenalty=10000
+%--------------------------------------
+
+%Списки
+\usepackage{enumitem}
+
+%Подписи
+\usepackage{caption} 
+
+%Гиперссылки
+\usepackage{hyperref}
+
+\hypersetup {
+	unicode=true
+}
+
+%Рисунки
+%--------------------------------------
+\DeclareCaptionLabelSeparator*{emdash}{~--- }
+\captionsetup[figure]{labelsep=emdash,font=onehalfspacing,position=bottom}
+%--------------------------------------
+
+\usepackage{tempora}
+\usepackage{amsmath}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{listings}
+\lstset{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue},
+  commentstyle=\itshape\color{purple},
+  identifierstyle=\color{black},
+  stringstyle=\color{red},
+  numbers=left,           
+  numberstyle=\tiny\color{gray}, 
+  numbersep=10pt,      
+  % ------------------------------
+}
+
+%--------------------------------------
+%			НАЧАЛО ДОКУМЕНТА
+%--------------------------------------
+
+\begin{document}
+
+%--------------------------------------
+%			ТИТУЛЬНЫЙ ЛИСТ
+%--------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\newpage
+
+
+%Шапка титульного листа
+%--------------------------------------
+\vspace*{-60pt}
+\hspace{-65pt}
+\begin{minipage}{0.3\textwidth}
+\hspace*{-20pt}\centering
+\includegraphics[width=\textwidth]{emblem}
+\end{minipage}
+\begin{minipage}{0.67\textwidth}\small \textbf{
+\vspace*{-0.7ex}
+\hspace*{-6pt}\centerline{Министерство науки и высшего образования Российской Федерации}
+\vspace*{-0.7ex}
+\centerline{Федеральное государственное бюджетное образовательное учреждение }
+\vspace*{-0.7ex}
+\centerline{высшего образования}
+\vspace*{-0.7ex}
+\centerline{<<Московский государственный технический университет}
+\vspace*{-0.7ex}
+\centerline{имени Н.Э. Баумана}
+\vspace*{-0.7ex}
+\centerline{(национальный исследовательский университет)>>}
+\vspace*{-0.7ex}
+\centerline{(МГТУ им. Н.Э. Баумана)}}
+\end{minipage}
+%--------------------------------------
+
+%Полосы
+%--------------------------------------
+\vspace{-25pt}
+\hspace{-35pt}\rule{\textwidth}{2.3pt}
+
+\vspace*{-20.3pt}
+\hspace{-35pt}\rule{\textwidth}{0.4pt}
+%--------------------------------------
+
+\vspace{1.5ex}
+\hspace{-35pt} \noindent \small ФАКУЛЬТЕТ\hspace{80pt} <<Информатика и системы управления>>
+
+\vspace*{-16pt}
+\hspace{47pt}\rule{0.83\textwidth}{0.4pt}
+
+\vspace{0.5ex}
+\hspace{-35pt} \noindent \small КАФЕДРА\hspace{50pt} <<Теоретическая информатика и компьютерные технологии>>
+
+\vspace*{-16pt}
+\hspace{30pt}\rule{0.866\textwidth}{0.4pt}
+  
+\vspace{11em}
+
+\begin{center}
+\Large {\bf Летучка № 7} \\ 
+\large {\bf по курсу <<Языки и методы программирования>>} \\ 
+\large <<Функтор Roots, метод map>>
+\end{center}\normalsize
+
+\vspace{8em}
+
+
+\begin{flushright}
+  {Студент группы ИУ9-21Б Воронков А. С.\hspace*{15pt} \\
+  \vspace{2ex}
+  Преподаватель Посевин Д. П.\hspace*{15pt}}
+\end{flushright}
+
+\bigskip
+
+\vfill
+ 
+
+\begin{center}
+\textsl{Москва 2026}
+\end{center}
+\end{titlepage}
+%--------------------------------------
+%		КОНЕЦ ТИТУЛЬНОГО ЛИСТА
+%--------------------------------------
+
+\renewcommand{\ttdefault}{pcr}
+
+\setlength{\tabcolsep}{3pt}
+\newpage
+\setcounter{page}{2}
+
+\section{Задание}
+\begin{enumerate}
+    \item Реализовать пример из лекции
+    \item Реализовать пример для полинома степени N
+    \item Реализовать графический пользовательский интерфейс отображающий траекторию полета тела. Поля формы: угол, скорость, ускорение свободного падения.
+\end{enumerate}
+\section{Практическая реализация}
+Код файла Roots.java
+\begin{lstlisting}
+import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+public class Roots<T> {
+    public ArrayList<T> container;
+
+    public Roots(ArrayList<T> container) {
+        this.container = container;
+    }
+
+    public static Roots<Double> of(
+            double a, double b, double c, double eps) {
+        ArrayList<Double> roots = new ArrayList<>();
+        if (a == 0.0) {
+            if (b != 0.0) roots.add(-c/b);
+        } else {
+            double d = b*b - 4*a*c;
+            if (d >= 0.0) {
+                if (d < eps) { d = 0.0;}
+                roots.add((-b+Math.sqrt(d))/(2*a));
+                roots.add((-b-Math.sqrt(d))/(2*a));
+            }
+        }
+        return new Roots<>(roots);
+    }
+
+    public <R> Roots<R> map(Function<T, R> f) {
+        ArrayList<R> c = new ArrayList<>();
+        for (T t: container) {c.add(f.apply(t)); }
+        return new Roots<>(c);
+    }
+
+    public void forEach(Consumer<T> f) {
+        for (T t : container) {f.accept(t); }
+    }
+}
+\end{lstlisting}
+\par
+Код файла Polynom.java
+\begin{lstlisting}
+import java.util.HashSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.lang.Math;
+
+public class Polynom<T> {
+    final static double RANGE = 1000.0;
+    private HashSet<T> container;
+
+    private Polynom(HashSet<T> container) {
+        this.container = container;
+    }
+
+    public static double y(double[] k, double x) {
+        double p = 0;
+        int n = k.length;
+        for (int j = 0; j < n; j++) {
+            p += Math.pow(x, n-1-j) * k[j];
+        }
+        return p;
+    }
+
+    public static Polynom<Double> of(
+            double[] k, double eps) {
+        HashSet<Double> roots = new HashSet<>();
+        for (double i = -RANGE; i < RANGE; i += 0.1) {
+            if (Math.abs(y(k, i)) < eps) {
+                roots.add(i);
+            }
+        }
+        return new Polynom<>(roots);
+    }
+
+    public <R> Polynom<R> map(Function<T, R> f) {
+        HashSet<R> c = new HashSet<>();
+        for (T t: container) {c.add(f.apply(t)); }
+        return new Polynom<>(c);
+    }
+
+    public void forEach(Consumer<T> f) {
+        for (T t : container) {f.accept(t); }
+    }
+}
+\end{lstlisting}
+\par
+Код файла Test.java
+\begin{lstlisting}
+import java.util.Scanner;
+
+public class Test {
+    private static final double G = 9.81;
+    public static void main(String[] args) {
+        double[] k = {1, 6, 11, 6};
+        Polynom.of(k, 1e-5)
+                .map(x-> new Point(x, Polynom.y(k, x)))
+                .map(pt-> pt.dist())
+                .forEach(x-> System.out.println(x));
+    }
+}
+\end{lstlisting}
+\par
+Код файла Point.java
+\begin{lstlisting}
+    public class Point {
+    private double x, y;
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+    public double getX() {return x;}
+    public double getY() {return y;}
+    public double dist() {
+        return Math.sqrt(x*x + y*y);
+    }
+    public String toString() {
+        return String.format("(%f,␣%f)", x, y);
+    }
+}
+\end{lstlisting}
+\par
+Код файла PictureForm.java
+\begin{lstlisting}
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+
+public class PictureForm {
+    private JPanel panel;
+    private JLabel labelFi;
+    private JLabel labelV;
+    private JLabel labelG;
+    private JSpinner spinnerFi;
+    private JSpinner spinnerV;
+    private JSpinner spinnerG;
+    private CanvasPanel canvasPanel;
+
+
+    private double fi = 45.0, v = 10.0, g = 9.81;
+
+    public PictureForm(CanvasPanel canvasPanel) {
+        this.canvasPanel = canvasPanel;
+        panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.setLayout(new GridLayout(3, 2, 10, 10));
+
+        labelFi = new JLabel("Fi");
+        labelV = new JLabel("V");
+        labelG = new JLabel("g");
+
+        spinnerFi = new JSpinner(new SpinnerNumberModel(45.0, 0.0, 90.0, 1.0));
+        spinnerV = new JSpinner(new SpinnerNumberModel(10.0, 0.0, 1000.0, 0.1));
+        spinnerG = new JSpinner(new SpinnerNumberModel(9.81, 0, 100, 0.01));
+
+        ChangeListener listener = e -> updateTrajectory();
+        spinnerFi.addChangeListener(listener);
+        spinnerV.addChangeListener(listener);
+        spinnerG.addChangeListener(listener);
+
+
+
+        panel.add(labelFi);
+        panel.add(spinnerFi);
+        panel.add(labelV);
+        panel.add(spinnerV);
+        panel.add(labelG);
+        panel.add(spinnerG);
+        updateTrajectory();
+    }
+
+    private void updateTrajectory() {
+        double fi = ((Number) spinnerFi.getValue()).doubleValue();
+        double v  = ((Number) spinnerV.getValue()).doubleValue();
+        double g  = ((Number) spinnerG.getValue()).doubleValue();
+
+        double fiRad = Math.toRadians(fi);
+        double tFlight = 2 * v * Math.sin(fiRad) / g;
+
+        Roots<Double> times = new Roots<>(new ArrayList<>());
+        int steps = 100;
+        for (int i = 0; i <= steps; i++)
+            times.container.add(i * tFlight / steps);
+
+        Roots<Point2D.Double> points = times.map(t -> {
+            double x = v * Math.cos(fiRad) * t;
+            double y = v * Math.sin(fiRad) * t - 0.5 * g * t * t;
+            return new Point2D.Double(x, y);
+        });
+
+        canvasPanel.setPoints(points);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Траектория полета");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        CanvasPanel canvasPanel = new CanvasPanel();
+        canvasPanel.setPreferredSize(new Dimension(300,200));
+        frame.add(new PictureForm(canvasPanel).panel, BorderLayout.NORTH);
+        frame.add(canvasPanel, BorderLayout.CENTER);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+}
+\end{lstlisting}
+\par
+Код файла CanvasPanel.java
+\begin{lstlisting}
+    import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.awt.geom.Point2D;
+
+public class CanvasPanel extends JPanel {
+    private double fi=45.0, v=10.0, g=9.81;
+    private Roots<Point2D.Double> points = new Roots<>(new ArrayList<>());
+
+    public void setPoints(Roots<Point2D.Double> points) {
+        this.points = points;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g2) {
+        super.paintComponent(g2);
+
+        g2.setColor(Color.RED);
+
+        int prevX = 0;
+        int prevY = getHeight();
+        double scale = 10;
+
+        for (Point2D.Double p : points.container) {
+            int drawX = (int) (p.x * scale);
+            int drawY = getHeight() - (int) (p.y * scale);
+
+            g2.drawLine(prevX, prevY, drawX, drawY);
+
+            prevX = drawX;
+            prevY = drawY;
+        }
+    }
+}
+\end{lstlisting}
+\begin{center}
+    \nopagebreak
+    \includegraphics[width=0.85\textwidth]{let7_1}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Результат работы Test.java}
+
+    \includegraphics[width=0.85\textwidth]{let7_2}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Визуализация траектории полета}
+\end{center}
+
+\section{Вывод}
+В данной летучке были получены навыки работы с функторами.
+\end{document}
