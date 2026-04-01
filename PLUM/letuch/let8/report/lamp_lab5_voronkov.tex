@@ -1,0 +1,318 @@
+\documentclass[a4paper, 14pt]{extarticle}
+
+% Поля
+%--------------------------------------
+\usepackage{geometry}
+\geometry{a4paper,tmargin=2cm,bmargin=2cm,lmargin=3cm,rmargin=1cm}
+%--------------------------------------
+
+
+%Russian-specific packages
+%--------------------------------------
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, main=russian]{babel}
+\usepackage{cmap}
+%--------------------------------------
+
+\usepackage{textcomp}
+\usepackage{amssymb}
+
+% Красная строка
+%--------------------------------------
+\usepackage{indentfirst}               
+%--------------------------------------             
+
+
+%Graphics
+%--------------------------------------
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{wrapfig}
+%--------------------------------------
+
+% Полуторный интервал
+%--------------------------------------
+\linespread{1.3}                    
+%--------------------------------------
+
+%Выравнивание и переносы
+%--------------------------------------
+% Избавляемся от переполнений
+\sloppy
+% Запрещаем разрыв страницы после первой строки абзаца
+\clubpenalty=10000
+% Запрещаем разрыв страницы после последней строки абзаца
+\widowpenalty=10000
+%--------------------------------------
+
+%Списки
+\usepackage{enumitem}
+
+%Подписи
+\usepackage{caption} 
+
+%Гиперссылки
+\usepackage{hyperref}
+
+\hypersetup {
+	unicode=true
+}
+
+%Рисунки
+%--------------------------------------
+\DeclareCaptionLabelSeparator*{emdash}{~--- }
+\captionsetup[figure]{labelsep=emdash,font=onehalfspacing,position=bottom}
+%--------------------------------------
+
+\usepackage{tempora}
+\usepackage{amsmath}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{listings}
+\lstset{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C++,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue},
+  commentstyle=\itshape\color{purple},
+  identifierstyle=\color{black},
+  stringstyle=\color{red},
+  numbers=left,           
+  numberstyle=\tiny\color{gray}, 
+  numbersep=10pt,      
+  % ------------------------------
+}
+
+%--------------------------------------
+%			НАЧАЛО ДОКУМЕНТА
+%--------------------------------------
+
+\begin{document}
+
+%--------------------------------------
+%			ТИТУЛЬНЫЙ ЛИСТ
+%--------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\newpage
+
+
+%Шапка титульного листа
+%--------------------------------------
+\vspace*{-60pt}
+\hspace{-65pt}
+\begin{minipage}{0.3\textwidth}
+\hspace*{-20pt}\centering
+\includegraphics[width=\textwidth]{emblem}
+\end{minipage}
+\begin{minipage}{0.67\textwidth}\small \textbf{
+\vspace*{-0.7ex}
+\hspace*{-6pt}\centerline{Министерство науки и высшего образования Российской Федерации}
+\vspace*{-0.7ex}
+\centerline{Федеральное государственное бюджетное образовательное учреждение }
+\vspace*{-0.7ex}
+\centerline{высшего образования}
+\vspace*{-0.7ex}
+\centerline{<<Московский государственный технический университет}
+\vspace*{-0.7ex}
+\centerline{имени Н.Э. Баумана}
+\vspace*{-0.7ex}
+\centerline{(национальный исследовательский университет)>>}
+\vspace*{-0.7ex}
+\centerline{(МГТУ им. Н.Э. Баумана)}}
+\end{minipage}
+%--------------------------------------
+
+%Полосы
+%--------------------------------------
+\vspace{-25pt}
+\hspace{-35pt}\rule{\textwidth}{2.3pt}
+
+\vspace*{-20.3pt}
+\hspace{-35pt}\rule{\textwidth}{0.4pt}
+%--------------------------------------
+
+\vspace{1.5ex}
+\hspace{-35pt} \noindent \small ФАКУЛЬТЕТ\hspace{80pt} <<Информатика и системы управления>>
+
+\vspace*{-16pt}
+\hspace{47pt}\rule{0.83\textwidth}{0.4pt}
+
+\vspace{0.5ex}
+\hspace{-35pt} \noindent \small КАФЕДРА\hspace{50pt} <<Теоретическая информатика и компьютерные технологии>>
+
+\vspace*{-16pt}
+\hspace{30pt}\rule{0.866\textwidth}{0.4pt}
+  
+\vspace{11em}
+
+\begin{center}
+\Large {\bf Летучка № 8} \\ 
+\large {\bf по курсу <<Языки и методы программирования>>} \\ 
+\large <<Модель вселенной>>
+\end{center}\normalsize
+
+\vspace{8em}
+
+
+\begin{flushright}
+  {Студент группы ИУ9-21Б Воронков А. С.\hspace*{15pt} \\
+  \vspace{2ex}
+  Преподаватель Посевин Д. П.\hspace*{15pt}}
+\end{flushright}
+
+\bigskip
+
+\vfill
+ 
+
+\begin{center}
+\textsl{Москва 2026}
+\end{center}
+\end{titlepage}
+%--------------------------------------
+%		КОНЕЦ ТИТУЛЬНОГО ЛИСТА
+%--------------------------------------
+
+\renewcommand{\ttdefault}{pcr}
+
+\setlength{\tabcolsep}{3pt}
+\newpage
+\setcounter{page}{2}
+
+\section{Задание}
+Необходимо реализовать модель вселенной с деструкторами, чтобы сначала уничтожались точки, а потом вселенная
+
+\pagebreak
+\section{Практическая реализация}
+\par
+Код файла Universe.cpp
+\begin{lstlisting}
+#include <iostream>
+#include <cmath>
+#include <string>
+using namespace std;
+
+int length(int n) {
+    int l = 1;
+    if (n < 0) {
+        l++;
+        n = -n;
+    }
+    for(; n/=10; ++l);
+    return l;
+    }
+
+class Point
+{
+	public:
+		double x, y, z;
+		double r();
+		Point(double x, double y, double z);
+        void Print();
+		virtual ~Point();
+};
+
+Point :: Point (double x, double y, double z)
+{
+ this->x = x;
+ this->y = y;
+ this->z = z;
+ cout << "("<< x <<","<< y <<","<< z <<")" << endl;
+}
+
+void Point :: Print()
+{
+ cout << "("<< x <<","<< y <<","<< z <<")";
+}
+
+Point ::~Point()
+{
+ cout << "Point " << "("<< x <<","<< y <<","<< z <<")" << " selfdestructed!!!!" << endl;
+}
+
+double Point :: r()
+{
+ return sqrt(x*x+y*y+z*z);
+}
+
+
+class Universe
+{
+    public:
+        int n;
+        Point** p;
+        Universe();
+        void Line(int p1, int p2);
+        virtual ~Universe();
+
+};
+
+Universe :: Universe()
+{
+    this->n = 0;
+    this->p = new Point* [20];
+}
+
+Universe :: ~Universe()
+{
+    while (n > 0)
+    {
+        delete p[--n];
+    }
+    delete [] p;
+    cout << "Universe deleted" << endl;
+}
+
+void Universe :: Line(int p1, int p2)
+{
+    cout << "Line by points ";
+    p[p1]->Print();
+    cout << " and ";
+    p[p2]->Print();
+    cout << endl;
+    cout << "x - " << p[p1]->x << "   " << "y - " << p[p1]->y << "   " << "z - " << p[p1]->z << endl;
+    int ln1 = 4 + length(p[p1]->x);
+    int ln2 = 4 + length(p[p1]->y);
+    int ln3 = 4 + length(p[p1]->z);
+    cout << string(ln1, '-') << " = " << string(ln2, '-') << " = " << string(ln3, '-') <<endl;
+    int t1 = p[p2]->x - p[p1]->x;
+    int t2 = p[p2]->y - p[p1]->y;
+    int t3 = p[p2]->z - p[p1]->z;
+    cout <<  string(ln1/2, ' ') << t1 << string(ln1/2 - length(t1) + 3, ' ')
+    <<  string(ln2/2, ' ') << t2 << string(ln2/2 - length(t2) + 3, ' ')
+    <<  string(ln3/2, ' ') << t3 << string(ln3/2 - length(t3), ' ') << endl;
+}
+
+int main()
+{
+    Universe* U = new Universe();
+
+    for (double i=0; i<10; i++)
+        {
+            Point* A = new Point(i,i*i,i*i+i);
+            cout << "dist: " << A->r() << endl;
+            U->p[U->n++] = A;
+        }
+
+    U->Line(4, 3);
+    delete U;
+    return 0;
+}
+\end{lstlisting}
+
+\section{Результаты}
+В результае задание по созданию вселенной ббыло выполнено. Дополнительно был реализован метод вычисления и печати уравнения прямой, заданной двумя точками вселенной.
+
+\begin{center}
+    \nopagebreak
+    \includegraphics[width=0.85\textwidth]{let8_1}
+    \captionsetup{justification=centering}
+    \captionof{figure}{Вывод программы}
+\end{center}
+
+\end{document}
